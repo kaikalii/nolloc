@@ -1,6 +1,6 @@
 //! A growable key-value map where all items exist on the stack
 
-use core::{borrow::Borrow, fmt, ptr};
+use core::{borrow::Borrow, fmt, ops::Index, ptr};
 
 /// A growable key-value map where all items exist on the stack
 pub struct Map<'a, K, V> {
@@ -33,6 +33,9 @@ where
     pub fn len(&self) -> usize {
         self.len
     }
+}
+
+impl<'a, K, V> Map<'a, K, V> {
     /// Check if the map contains a key
     ///
     /// This is an **O(logn)** operation.
@@ -49,13 +52,20 @@ where
     pub fn get<Q>(&self, key: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: PartialOrd,
+        Q: PartialOrd + ?Sized,
+    {
+        Some(&self.get_node(key)?.value)
+    }
+    fn get_node<Q>(&self, key: &Q) -> Option<&'a MapNode<'a, K, V>>
+    where
+        K: Borrow<Q>,
+        Q: PartialOrd + ?Sized,
     {
         let mut curr = self.head?;
         loop {
             let curr_key = curr.key.borrow();
             if key == curr_key {
-                return Some(&curr.value);
+                return Some(curr);
             } else if key < curr_key {
                 curr = curr.left?;
             } else {
@@ -63,6 +73,12 @@ where
             }
         }
     }
+}
+
+impl<'a, K, V> Map<'a, K, V>
+where
+    K: PartialOrd,
+{
     /// Insert a key/value pair into the map if it does not already exist and
     /// call a continuation on the new (or old) map
     ///
@@ -186,6 +202,10 @@ where
         } else {
             then(self)
         }
+    }
+    /// Get a view into the entry at the given key
+    pub fn entry<'m>(&'m self, key: K) -> Entry<'a, 'm, K, V> {
+        Entry { key, map: self }
     }
 }
 
@@ -317,5 +337,112 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
+    }
+}
+
+/// A view into a single entry in a [`Map`]
+#[derive(Debug)]
+pub struct Entry<'a, 'm, K, V>
+where
+    K: PartialOrd,
+{
+    key: K,
+    map: &'m Map<'a, K, V>,
+}
+
+impl<'a, 'm, K, V> Entry<'a, 'm, K, V>
+where
+    K: PartialOrd,
+{
+    /// Get the key associated with the entry
+    pub fn key(&self) -> &K {
+        if let Some(node) = self.map.get_node(&self.key) {
+            &node.key
+        } else {
+            &self.key
+        }
+    }
+    /// Insert a value if the entry does not already exist in the map
+    /// and call a continuation
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Map;
+    ///
+    /// Map::new().entry("poneyland").or_insert(3, |map, _| {
+    ///     assert_eq!(map["poneyland"], 3);
+    ///     let x = map.entry("poneyland").or_insert(10, |_, v| *v * 2);
+    ///     assert_eq!(x, 6);
+    /// });
+    /// ```
+    pub fn or_insert<F, R>(self, value: V, then: F) -> R
+    where
+        F: FnOnce(&Map<K, V>, &V) -> R,
+    {
+        if let Some(value) = self.map.get(&self.key) {
+            then(self.map, value)
+        } else {
+            self.map
+                .insert(self.key, value, |map| then(map, &map.head.unwrap().value))
+        }
+    }
+    /// Insert a value if the entry does not already exist in the map
+    /// and call a continuation
+    pub fn or_insert_with<F, R, G>(self, get_value: G, then: F) -> R
+    where
+        F: FnOnce(&Map<K, V>, &V) -> R,
+        G: FnOnce() -> V,
+    {
+        if let Some(value) = self.map.get(&self.key) {
+            then(self.map, value)
+        } else {
+            self.map.insert(self.key, get_value(), |map| {
+                then(map, &map.head.unwrap().value)
+            })
+        }
+    }
+    /// Insert a value if the entry does not already exist in the map
+    /// and call a continuation
+    pub fn or_insert_with_key<F, R, G>(self, get_value: G, then: F) -> R
+    where
+        F: FnOnce(&Map<K, V>, &V) -> R,
+        G: FnOnce(&K) -> V,
+    {
+        if let Some(value) = self.map.get(&self.key) {
+            then(self.map, value)
+        } else {
+            let value = get_value(&self.key);
+            self.map
+                .insert(self.key, value, |map| then(map, &map.head.unwrap().value))
+        }
+    }
+    /// Insert the default value if the entry does not already exist in the map
+    /// and call a continuation
+    pub fn of_default<F, R, G>(self, then: F) -> R
+    where
+        F: FnOnce(&Map<K, V>, &V) -> R,
+        V: Default,
+    {
+        self.or_insert_with(Default::default, then)
+    }
+    /// Insert a value even if the entry already exists and call a continuation
+    pub fn insert<F, R>(self, value: V, then: F) -> R
+    where
+        F: FnOnce(&Map<K, V>, &V) -> R,
+    {
+        self.map
+            .insert(self.key, value, |map| then(map, &map.head.unwrap().value))
+    }
+}
+
+impl<'a, K, V, Q> Index<&Q> for Map<'a, K, V>
+where
+    K: Borrow<Q>,
+    Q: PartialOrd + ?Sized,
+{
+    type Output = V;
+    #[track_caller]
+    fn index(&self, index: &Q) -> &Self::Output {
+        self.get(index).expect("no entry found for key")
     }
 }

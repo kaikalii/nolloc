@@ -32,6 +32,9 @@ where
     pub fn len(&self) -> usize {
         self.len
     }
+}
+
+impl<'a, T> Set<'a, T> {
     /// Check if the set contains a key
     ///
     /// This is an **O(logn)** operation.
@@ -62,6 +65,12 @@ where
             }
         }
     }
+}
+
+impl<'a, T> Set<'a, T>
+where
+    T: PartialOrd,
+{
     /// Insert an item into the set if it does not already exist,
     /// call a continuation on the new (or old) set, and return its result
     ///
