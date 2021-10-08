@@ -5,7 +5,7 @@ All of their items are kept on the stack. This is done by passing a continuation
 that can add elements.
 
 These structures are useful for when size in known only at runtime and dynamic allocation would be too
-slow or even impossible, such on on embedded devices.
+slow or even impossible, such as on embedded devices.
 
 This library is fully `no_std` compatible, and it has no dependencies.
 
