@@ -117,7 +117,7 @@ impl<'a, T> List<'a, T> {
     pub fn collect<I, F, R>(iter: I, then: F) -> R
     where
         I: IntoIterator<Item = T>,
-        F: Fn(&List<I::Item>) -> R,
+        F: FnOnce(&List<I::Item>) -> R,
     {
         List::default().extend(iter, then)
     }
@@ -143,7 +143,7 @@ impl<'a, T> List<'a, T> {
     pub fn extend<I, F, R>(&self, iter: I, f: F) -> R
     where
         I: IntoIterator<Item = T>,
-        F: Fn(&List<I::Item>) -> R,
+        F: FnOnce(&List<I::Item>) -> R,
     {
         let mut iter = iter.into_iter();
         if let Some(item) = iter.next() {
