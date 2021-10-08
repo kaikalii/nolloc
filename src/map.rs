@@ -217,19 +217,19 @@ where
     /// Get an iterator over the key-value pairs of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn iter<'m>(&'m self) -> Iter<'a, 'm, K, V> {
+    pub fn iter(&self) -> Iter<'a, K, V> {
         Iter { node: self.head }
     }
     /// Get an iterator over the keys of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn keys<'m>(&'m self) -> Keys<'a, 'm, K, V> {
+    pub fn keys(&self) -> Keys<'a, K, V> {
         Keys { iter: self.iter() }
     }
     /// Get an iterator over the values of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn values<'m>(&'m self) -> Values<'a, 'm, K, V> {
+    pub fn values(&self) -> Values<'a, K, V> {
         Values { iter: self.iter() }
     }
     /// Collect an iterator into a map and call a continuation function on it
@@ -273,14 +273,14 @@ where
         }
     }
     /// Get a view into the entry at the given key
-    pub fn entry<'m>(&'m self, key: K) -> Entry<'a, 'm, K, V> {
+    pub fn entry(&'a self, key: K) -> Entry<'a, K, V> {
         Entry { key, map: self }
     }
 }
 
 /// An iterator over the key-value pairs of a [`Map`]
-pub struct Iter<'a, 'm, K, V> {
-    node: Option<&'m MapNode<'a, K, V>>,
+pub struct Iter<'a, K, V> {
+    node: Option<&'a MapNode<'a, K, V>>,
 }
 
 impl<'a, K, V> MapNode<'a, K, V> {
@@ -292,11 +292,11 @@ impl<'a, K, V> MapNode<'a, K, V> {
     }
 }
 
-impl<'a, 'm, K, V> Iterator for Iter<'a, 'm, K, V>
+impl<'a, K, V> Iterator for Iter<'a, K, V>
 where
     K: PartialOrd,
 {
-    type Item = (&'m K, &'m V);
+    type Item = (&'a K, &'a V);
     fn next(&mut self) -> Option<Self::Item> {
         let node = self.node?;
         let res = (&node.key, &node.value);
@@ -315,41 +315,52 @@ where
 }
 
 /// An iterator over the keys of a [`Map`]
-pub struct Keys<'a, 'm, K, V> {
-    iter: Iter<'a, 'm, K, V>,
+pub struct Keys<'a, K, V> {
+    iter: Iter<'a, K, V>,
 }
 
-impl<'a, 'm, K, V> Iterator for Keys<'a, 'm, K, V>
+impl<'a, K, V> Iterator for Keys<'a, K, V>
 where
     K: PartialOrd,
 {
-    type Item = &'m K;
+    type Item = &'a K;
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.iter.next()?.0)
     }
 }
 
 /// An iterator over the values of a [`Map`]
-pub struct Values<'a, 'm, K, V> {
-    iter: Iter<'a, 'm, K, V>,
+pub struct Values<'a, K, V> {
+    iter: Iter<'a, K, V>,
 }
 
-impl<'a, 'm, K, V> Iterator for Values<'a, 'm, K, V>
+impl<'a, K, V> Iterator for Values<'a, K, V>
 where
     K: PartialOrd,
 {
-    type Item = &'m V;
+    type Item = &'a V;
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.iter.next()?.1)
     }
 }
 
-impl<'a, 'm, K, V> IntoIterator for &'m Map<'a, K, V>
+impl<'a, K, V> IntoIterator for &'a Map<'a, K, V>
 where
     K: PartialOrd,
 {
-    type Item = (&'m K, &'m V);
-    type IntoIter = Iter<'a, 'm, K, V>;
+    type Item = (&'a K, &'a V);
+    type IntoIter = Iter<'a, K, V>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, K, V> IntoIterator for Map<'a, K, V>
+where
+    K: PartialOrd,
+{
+    type Item = (&'a K, &'a V);
+    type IntoIter = Iter<'a, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
@@ -411,15 +422,15 @@ where
 
 /// A view into a single entry in a [`Map`]
 #[derive(Debug)]
-pub struct Entry<'a, 'm, K, V>
+pub struct Entry<'a, K, V>
 where
     K: PartialOrd,
 {
     key: K,
-    map: &'m Map<'a, K, V>,
+    map: &'a Map<'a, K, V>,
 }
 
-impl<'a, 'm, K, V> Entry<'a, 'm, K, V>
+impl<'a, K, V> Entry<'a, K, V>
 where
     K: PartialOrd,
 {

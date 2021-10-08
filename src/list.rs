@@ -123,7 +123,7 @@ impl<'a, T> List<'a, T> {
         item
     }
     /// Get an iterator over the items of the list
-    pub fn iter<'l>(&'l self) -> Iter<'a, 'l, T> {
+    pub fn iter(&self) -> Iter<'a, T> {
         Iter { node: self.head }
     }
     /// Check if the list contains an item
@@ -255,12 +255,12 @@ impl<'a, T> List<'a, T> {
 }
 
 /// An iterator over the items in a [`List`]
-pub struct Iter<'a, 'l, T> {
-    node: &'l ListNode<'a, T>,
+pub struct Iter<'a, T> {
+    node: &'a ListNode<'a, T>,
 }
 
-impl<'a, 'l, T> Iterator for Iter<'a, 'l, T> {
-    type Item = &'l T;
+impl<'a, T> Iterator for Iter<'a, T> {
+    type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         match self.node {
             ListNode::Nil => None,
@@ -272,11 +272,19 @@ impl<'a, 'l, T> Iterator for Iter<'a, 'l, T> {
     }
 }
 
-impl<'a, 'l, T> IntoIterator for &'l List<'a, T> {
-    type Item = &'l T;
-    type IntoIter = Iter<'a, 'l, T>;
+impl<'a, T> IntoIterator for &'a List<'a, T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
     fn into_iter(self) -> Self::IntoIter {
-        self.iter()
+        Iter { node: self.head }
+    }
+}
+
+impl<'a, T> IntoIterator for List<'a, T> {
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        Iter { node: self.head }
     }
 }
 

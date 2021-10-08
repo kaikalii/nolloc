@@ -225,7 +225,7 @@ where
     /// Get an iterator over the key/item pairs of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn iter<'s>(&'s self) -> Iter<'a, 's, T> {
+    pub fn iter(&self) -> Iter<'a, T> {
         Iter { node: self.head }
     }
     /// Collect an iterator into a set and call a continuation function on it
@@ -267,8 +267,8 @@ where
 }
 
 /// An iterator over the key/item pairs of a [`Set`]
-pub struct Iter<'a, 's, T> {
-    node: Option<&'s SetNode<'a, T>>,
+pub struct Iter<'a, T> {
+    node: Option<&'a SetNode<'a, T>>,
 }
 
 impl<'a, T> SetNode<'a, T> {
@@ -280,11 +280,11 @@ impl<'a, T> SetNode<'a, T> {
     }
 }
 
-impl<'a, 's, T> Iterator for Iter<'a, 's, T>
+impl<'a, T> Iterator for Iter<'a, T>
 where
     T: PartialOrd,
 {
-    type Item = &'s T;
+    type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
         let node = self.node?;
         let res = &node.item;
@@ -302,12 +302,23 @@ where
     }
 }
 
-impl<'a, 's, T> IntoIterator for &'s Set<'a, T>
+impl<'a, T> IntoIterator for &'a Set<'a, T>
 where
     T: PartialOrd,
 {
-    type Item = &'s T;
-    type IntoIter = Iter<'a, 's, T>;
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+impl<'a, T> IntoIterator for Set<'a, T>
+where
+    T: PartialOrd,
+{
+    type Item = &'a T;
+    type IntoIter = Iter<'a, T>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
