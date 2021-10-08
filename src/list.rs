@@ -135,7 +135,7 @@ impl<'a, T> List<'a, T> {
     {
         self.iter().any(|i| i == item)
     }
-    /// Collect an iterator into a list and call a continuation function on it
+    /// Collect an iterator into a list, call a continuation function on it
     ///
     /// The items in the list will be in reversed order. To make the list's order
     /// match the iterator's order, use [`List::collect_in_order`].

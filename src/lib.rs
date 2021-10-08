@@ -46,6 +46,12 @@ let average = List::collect((0..100).filter(some_predicate), |list| {
 ```
 With this solution, `some_predicate` is only called once per item, and
 no allocation occurs!
+
+# Stack Size
+
+When using the [`collect`](list/struct.List.html#method.collect) methods of the collections in this crate, keep in mind the number of possible elements
+you could be collecting as well as their size. All the elements are collected onto the stack, so if you are
+not careful, you can get a stack overflow!
 */
 
 pub mod list;

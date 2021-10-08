@@ -63,8 +63,8 @@ where
             }
         }
     }
-    /// Insert a key/value pair into the map if it does not already exist,
-    /// call a continuation on the new (or old) map, and return its result
+    /// Insert a key/value pair into the map if it does not already exist and
+    /// call a continuation on the new (or old) map
     ///
     /// This is an **O(logn)** operation.
     pub fn try_insert<F, R>(&self, key: K, value: V, then: F) -> R
@@ -77,8 +77,8 @@ where
             self.insert(key, value, then)
         }
     }
-    /// Insert a key/value pair into the map, call a continuation on the
-    /// new map, and return its result
+    /// Insert a key/value pair into the map and call a continuation on the
+    /// new map
     ///
     /// If an entry with the key already exists in the map, it is not removed,
     /// but the new entry is still inserted. All lookups on the new map
