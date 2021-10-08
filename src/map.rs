@@ -82,6 +82,26 @@ where
             }
         }
     }
+    /// Get the key-value pair with the minimum key in the map
+    ///
+    /// This is an **O(logn)** operation.
+    pub fn min(&self) -> Option<(&K, &V)> {
+        let mut curr = self.head?;
+        while let Some(left) = curr.left {
+            curr = left;
+        }
+        Some((&curr.key, &curr.value))
+    }
+    /// Get the key-value pair with the maximum key in the map
+    ///
+    /// This is an **O(logn)** operation.
+    pub fn max(&self) -> Option<(&K, &V)> {
+        let mut curr = self.head?;
+        while let Some(right) = curr.right {
+            curr = right;
+        }
+        Some((&curr.key, &curr.value))
+    }
 }
 
 impl<'a, K, V> Map<'a, K, V> {

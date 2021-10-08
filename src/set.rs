@@ -80,10 +80,48 @@ where
             }
         }
     }
+    /// Get the item with the minimum value in the set
+    ///
+    /// This is an **O(logn)** operation.
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Set;
+    ///
+    /// Set::collect([4, 1, 5, 9, 2, 6, 9, 8, 3], |set| {
+    ///     assert_eq!(set.min(), Some(&1))
+    /// });
+    /// ```
+    pub fn min(&self) -> Option<&T> {
+        let mut curr = self.head?;
+        while let Some(left) = curr.left {
+            curr = left;
+        }
+        Some(&curr.item)
+    }
+    /// Get the item with the maximum value in the set
+    ///
+    /// This is an **O(logn)** operation.
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Set;
+    ///
+    /// Set::collect([4, 1, 5, 9, 2, 6, 9, 8, 3], |set| {
+    ///     assert_eq!(set.max(), Some(&9))
+    /// });
+    /// ```
+    pub fn max(&self) -> Option<&T> {
+        let mut curr = self.head?;
+        while let Some(right) = curr.right {
+            curr = right;
+        }
+        Some(&curr.item)
+    }
 }
 
 impl<'a, T> Set<'a, T> {
-    /// Check if the set contains a key
+    /// Check if the set contains an item
     ///
     /// This is an **O(logn)** operation.
     pub fn contains<Q>(&self, item: &Q) -> bool
@@ -93,7 +131,7 @@ impl<'a, T> Set<'a, T> {
     {
         self.get(item).is_some()
     }
-    /// Get the item corresponding to the item
+    /// Get an item in that set that is equals to to the item
     ///
     /// This is an **O(logn)** operation.
     pub fn get<Q>(&self, item: &Q) -> Option<&T>
