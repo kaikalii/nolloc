@@ -28,7 +28,7 @@ let average = sum as f32 / numbers.len() as f32;
 ```
 But this performs an allocation, which is not always desired or even possible.
 
-This crate provides [`List`], a resizeable list type where all items exist on the stack.
+This crate provides `List`, a resizeable list type where all items exist on the stack.
 `List` works by using continuations to process pushed-to lists.
 
 Here is how you could use `List` to get the average:
