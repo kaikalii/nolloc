@@ -4,6 +4,11 @@ This is a Rust library that provides growable data structures that do not dynami
 All of their items are kept on the stack. This is done by passing a continuation function to all methods
 that can add elements.
 
+These structures are useful for when size in known only at runtime and dynamic allocation would be too
+slow or even impossible, such on on embedded devices.
+
+This library is fully `!#[no_std]` compatible, and it has no dependencies.
+
 For more information, check out [the documentation](https://docs.rs/nolloc).
 
 # Use Cases
@@ -28,7 +33,7 @@ let average = sum as f32 / numbers.len() as f32;
 ```
 But this performs an allocation, which is not always desired or even possible.
 
-This crate provides `List`, a resizeable list type where all items exist on the stack.
+This crate provides `List`, a resizable list type where all items exist on the stack.
 `List` works by using continuations to process pushed-to lists.
 
 Here is how you could use `List` to get the average:
