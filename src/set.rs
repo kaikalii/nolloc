@@ -23,6 +23,16 @@ where
     pub fn new() -> Self {
         Set::default()
     }
+    /// Check if the set is empty
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+    /// Get the set's length
+    ///
+    /// This is an **O(1)** operation.
+    pub fn len(&self) -> usize {
+        self.len
+    }
     /// Check if the set contains a key
     ///
     /// This is an **O(logn)** operation.

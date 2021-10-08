@@ -24,6 +24,16 @@ where
     pub fn new() -> Self {
         Map::default()
     }
+    /// Check if the map is empty
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+    /// Get the map's length
+    ///
+    /// This is an **O(1)** operation.
+    pub fn len(&self) -> usize {
+        self.len
+    }
     /// Check if the map contains a key
     ///
     /// This is an **O(logn)** operation.
