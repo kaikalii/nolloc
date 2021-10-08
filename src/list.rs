@@ -1,3 +1,5 @@
+//! A growable, singly-linked list where all items exist on the stack
+
 use core::{
     cmp::Ordering,
     fmt,
@@ -121,8 +123,8 @@ impl<'a, T> List<'a, T> {
         item
     }
     /// Get an iterator over the items of the list
-    pub fn iter<'l>(&'l self) -> ListIter<'a, 'l, T> {
-        ListIter { node: self.head }
+    pub fn iter<'l>(&'l self) -> Iter<'a, 'l, T> {
+        Iter { node: self.head }
     }
     /// Check if the list contains an item
     ///
@@ -253,11 +255,11 @@ impl<'a, T> List<'a, T> {
 }
 
 /// An iterator over the items in a [`List`]
-pub struct ListIter<'a, 'l, T> {
+pub struct Iter<'a, 'l, T> {
     node: &'l ListNode<'a, T>,
 }
 
-impl<'a, 'l, T> Iterator for ListIter<'a, 'l, T> {
+impl<'a, 'l, T> Iterator for Iter<'a, 'l, T> {
     type Item = &'l T;
     fn next(&mut self) -> Option<Self::Item> {
         match self.node {
@@ -272,7 +274,7 @@ impl<'a, 'l, T> Iterator for ListIter<'a, 'l, T> {
 
 impl<'a, 'l, T> IntoIterator for &'l List<'a, T> {
     type Item = &'l T;
-    type IntoIter = ListIter<'a, 'l, T>;
+    type IntoIter = Iter<'a, 'l, T>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }

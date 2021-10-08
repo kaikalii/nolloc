@@ -48,8 +48,8 @@ With this solution, `some_predicate` is only called once per item, and
 no allocation occurs!
 */
 
-mod list;
-mod map;
-mod set;
+pub mod list;
+pub mod map;
+pub mod set;
 
-pub use {list::*, map::*, set::*};
+pub use {list::List, map::Map, set::Set};

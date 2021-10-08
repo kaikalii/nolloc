@@ -1,3 +1,5 @@
+//! A growable set where all items exist on the stack
+
 use core::borrow::Borrow;
 use std::fmt;
 
@@ -119,8 +121,8 @@ where
     /// Get an iterator over the key/item pairs of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn iter<'s>(&'s self) -> SetIter<'a, 's, T> {
-        SetIter { node: self.head }
+    pub fn iter<'s>(&'s self) -> Iter<'a, 's, T> {
+        Iter { node: self.head }
     }
     /// Collect an iterator into a set and call a continuation function on it
     ///
@@ -161,7 +163,7 @@ where
 }
 
 /// An iterator over the key/item pairs of a [`Set`]
-pub struct SetIter<'a, 's, T> {
+pub struct Iter<'a, 's, T> {
     node: Option<&'s SetNode<'a, T>>,
 }
 
@@ -174,7 +176,7 @@ impl<'a, T> SetNode<'a, T> {
     }
 }
 
-impl<'a, 's, T> Iterator for SetIter<'a, 's, T>
+impl<'a, 's, T> Iterator for Iter<'a, 's, T>
 where
     T: PartialOrd,
 {
@@ -201,7 +203,7 @@ where
     T: PartialOrd,
 {
     type Item = &'s T;
-    type IntoIter = SetIter<'a, 's, T>;
+    type IntoIter = Iter<'a, 's, T>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }

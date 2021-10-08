@@ -1,3 +1,5 @@
+//! A growable key-value map where all items exist on the stack
+
 use core::borrow::Borrow;
 use std::fmt;
 
@@ -121,20 +123,20 @@ where
     /// Get an iterator over the key/value pairs of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn iter<'m>(&'m self) -> MapIter<'a, 'm, K, V> {
-        MapIter { node: self.head }
+    pub fn iter<'m>(&'m self) -> Iter<'a, 'm, K, V> {
+        Iter { node: self.head }
     }
     /// Get an iterator over the keys of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn keys<'m>(&'m self) -> MapKeys<'a, 'm, K, V> {
-        MapKeys { iter: self.iter() }
+    pub fn keys<'m>(&'m self) -> Keys<'a, 'm, K, V> {
+        Keys { iter: self.iter() }
     }
     /// Get an iterator over the values of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
-    pub fn values<'m>(&'m self) -> MapValues<'a, 'm, K, V> {
-        MapValues { iter: self.iter() }
+    pub fn values<'m>(&'m self) -> Values<'a, 'm, K, V> {
+        Values { iter: self.iter() }
     }
     /// Collect an iterator into a map and call a continuation function on it
     ///
@@ -179,7 +181,7 @@ where
 }
 
 /// An iterator over the key/value pairs of a [`Map`]
-pub struct MapIter<'a, 'm, K, V> {
+pub struct Iter<'a, 'm, K, V> {
     node: Option<&'m MapNode<'a, K, V>>,
 }
 
@@ -192,7 +194,7 @@ impl<'a, K, V> MapNode<'a, K, V> {
     }
 }
 
-impl<'a, 'm, K, V> Iterator for MapIter<'a, 'm, K, V>
+impl<'a, 'm, K, V> Iterator for Iter<'a, 'm, K, V>
 where
     K: PartialOrd,
 {
@@ -215,11 +217,11 @@ where
 }
 
 /// An iterator over the keys of a [`Map`]
-pub struct MapKeys<'a, 'm, K, V> {
-    iter: MapIter<'a, 'm, K, V>,
+pub struct Keys<'a, 'm, K, V> {
+    iter: Iter<'a, 'm, K, V>,
 }
 
-impl<'a, 'm, K, V> Iterator for MapKeys<'a, 'm, K, V>
+impl<'a, 'm, K, V> Iterator for Keys<'a, 'm, K, V>
 where
     K: PartialOrd,
 {
@@ -230,11 +232,11 @@ where
 }
 
 /// An iterator over the values of a [`Map`]
-pub struct MapValues<'a, 'm, K, V> {
-    iter: MapIter<'a, 'm, K, V>,
+pub struct Values<'a, 'm, K, V> {
+    iter: Iter<'a, 'm, K, V>,
 }
 
-impl<'a, 'm, K, V> Iterator for MapValues<'a, 'm, K, V>
+impl<'a, 'm, K, V> Iterator for Values<'a, 'm, K, V>
 where
     K: PartialOrd,
 {
@@ -249,7 +251,7 @@ where
     K: PartialOrd,
 {
     type Item = (&'m K, &'m V);
-    type IntoIter = MapIter<'a, 'm, K, V>;
+    type IntoIter = Iter<'a, 'm, K, V>;
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
