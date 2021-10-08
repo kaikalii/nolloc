@@ -90,14 +90,14 @@ impl<'a, T> List<'a, T> {
     /// ```
     pub fn push<F, R>(&self, item: T, then: F) -> R
     where
-        F: FnOnce(List<T>) -> R,
+        F: FnOnce(&List<T>) -> R,
     {
         let new_head = ListNode::Cons(item, self.head);
         let list = List {
             head: &new_head,
             len: self.len + 1,
         };
-        then(list)
+        then(&list)
     }
     /// Attempt to pop and item off the front of the list
     ///
@@ -125,13 +125,15 @@ impl<'a, T> List<'a, T> {
         ListIter { node: self.head }
     }
     /// Check if the list contains an item
+    ///
+    /// This is an **O(n)** operation.
     pub fn contains<U>(&self, item: &U) -> bool
     where
         T: PartialEq<U>,
     {
         self.iter().any(|i| i == item)
     }
-    /// Collect an iterator into a list and call a continuation function on the list
+    /// Collect an iterator into a list and call a continuation function on it
     ///
     /// The items in the list will be in reversed order. To make the list's order
     /// match the iterator's order, use [`List::collect_in_order`].
@@ -250,7 +252,7 @@ impl<'a, T> List<'a, T> {
     }
 }
 
-/// A borrowing iterator over the items in a list
+/// An iterator over the items in a [`List`]
 pub struct ListIter<'a, 'l, T> {
     node: &'l ListNode<'a, T>,
 }

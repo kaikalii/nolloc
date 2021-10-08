@@ -1,5 +1,6 @@
-#![no_std]
+// #![no_std]
 #![warn(missing_docs)]
+#![deny(unsafe_code)]
 
 /*!
 # Description
@@ -48,5 +49,6 @@ no allocation occurs!
 */
 
 mod list;
+mod map;
 
-pub use list::*;
+pub use {list::*, map::*};
