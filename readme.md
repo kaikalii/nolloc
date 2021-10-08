@@ -7,7 +7,7 @@ that can add elements.
 These structures are useful for when size in known only at runtime and dynamic allocation would be too
 slow or even impossible, such on on embedded devices.
 
-This library is fully `!#[no_std]` compatible, and it has no dependencies.
+This library is fully `no_std` compatible, and it has no dependencies.
 
 For more information, check out [the documentation](https://docs.rs/nolloc).
 

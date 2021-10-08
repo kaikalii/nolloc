@@ -7,7 +7,7 @@
 
 This crate provides growable collections that do not use dynamic memory allocation.
 
-It is fully `#![no_std]` compatible, and it has no dependencies.
+It is fully `no_std` compatible, and it has no dependencies.
 
 # Collections
 
