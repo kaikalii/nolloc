@@ -1,7 +1,13 @@
 [package]
-description = 'Utilities for avoiding dynamic memory allocation'
+categories = ['data-structures', 'embedded', 'memory-management', 'no-std']
+description = 'Growable collections that do not use dynamic memory allocation'
+documentation = 'https://docs.rs/nolloc'
 edition = '2018'
+keywords = ['no_std', 'collection', 'stack', 'alloc', 'memory']
+license = 'unlicense'
 name = 'nolloc'
+readme = 'readme.md'
+repository = 'https://github.com/kaikalii/nolloc'
 version = '0.1.0'
 
 [dependencies]
