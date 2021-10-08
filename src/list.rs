@@ -409,8 +409,13 @@ where
 fn list_order() {
     let numbers = [1, 2, 3, 4, 5];
     List::collect(numbers, |list| {
-        for (i, n) in list.iter().zip(core::array::IntoIter::new(numbers).rev()) {
-            assert_eq!(i, &n);
+        for (i, n) in list.iter().zip(numbers.iter().rev()) {
+            assert_eq!(i, n);
+        }
+    });
+    List::collect_in_order(numbers, |list| {
+        for (i, n) in list.iter().zip(&numbers) {
+            assert_eq!(i, n);
         }
     });
 }
