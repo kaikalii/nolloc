@@ -4,7 +4,7 @@ use core::{
     hash::{Hash, Hasher},
 };
 
-/// A growable list where all items exist on the stack
+/// A growable, singly-linked list where all items exist on the stack
 ///
 /// When using [`List::push`], the new list with the pushed
 /// item cannot be accessed from the same scope. Instead,
@@ -31,8 +31,43 @@ impl<'a, T> List<'a, T> {
         self.len == 0
     }
     /// Get the list's length
+    ///
+    /// This is an **O(1)** operation.
     pub fn len(&self) -> usize {
         self.len
+    }
+    /// Get the first item in the list
+    pub fn first(&self) -> Option<&'a T> {
+        match self.head {
+            ListNode::Nil => None,
+            ListNode::Cons(x, _) => Some(x),
+        }
+    }
+    /// Get all items after the first item in the list
+    pub fn rest(&self) -> List<'a, T> {
+        match self.head {
+            ListNode::Nil => List::default(),
+            ListNode::Cons(_, xs) => List {
+                head: xs,
+                len: self.len - 1,
+            },
+        }
+    }
+    /// Get the last item in the list
+    ///
+    /// This is an **O(n)** operation.
+    pub fn last(&self) -> Option<&'a T> {
+        match self.head {
+            ListNode::Nil => None,
+            ListNode::Cons(x, mut xs) => {
+                let mut x = x;
+                while let ListNode::Cons(xs_x, xs_xs) = xs {
+                    x = xs_x;
+                    xs = xs_xs;
+                }
+                Some(x)
+            }
+        }
     }
     /// Push an item onto the front of the list and call a continuation function
     ///
@@ -98,6 +133,9 @@ impl<'a, T> List<'a, T> {
     }
     /// Collect an iterator into a list and call a continuation function on the list
     ///
+    /// The items in the list will be in reversed order. To make the list's order
+    /// match the iterator's order, use [`List::collect_in_order`].
+    ///
     /// # Example
     /// ```
     /// use nolloc::List;
@@ -117,11 +155,23 @@ impl<'a, T> List<'a, T> {
     pub fn collect<I, F, R>(iter: I, then: F) -> R
     where
         I: IntoIterator<Item = T>,
-        F: FnOnce(&List<I::Item>) -> R,
+        F: FnOnce(&List<T>) -> R,
     {
         List::default().extend(iter, then)
     }
+    /// Like [`List::collect`], but collects items in order
+    pub fn collect_in_order<I, F, R>(iter: I, then: F) -> R
+    where
+        I: IntoIterator<Item = T>,
+        I::IntoIter: DoubleEndedIterator,
+        F: FnOnce(&List<T>) -> R,
+    {
+        List::collect(iter.into_iter().rev(), then)
+    }
     /// Extend the list with an iterator and call a continuation function on it
+    ///
+    /// The items in the list will be in reversed order. To make the list's order
+    /// match the iterator's order, use [`List::extend_in_order`].
     ///
     /// # Example
     /// ```
@@ -140,17 +190,63 @@ impl<'a, T> List<'a, T> {
     ///
     /// assert_eq!(sum, 21);
     /// ```
-    pub fn extend<I, F, R>(&self, iter: I, f: F) -> R
+    pub fn extend<I, F, R>(&self, iter: I, then: F) -> R
     where
         I: IntoIterator<Item = T>,
-        F: FnOnce(&List<I::Item>) -> R,
+        F: FnOnce(&List<T>) -> R,
     {
         let mut iter = iter.into_iter();
         if let Some(item) = iter.next() {
-            self.push(item, |list| list.extend(iter, f))
+            self.push(item, |list| list.extend(iter, then))
         } else {
-            f(self)
+            then(self)
         }
+    }
+    /// Like [`List::extend`], but collects items in order.
+    ///
+    /// While the order of the extended items will match the
+    /// iterator's order, they will still come before any items
+    /// already in the list.
+    pub fn extend_in_order<I, F, R>(&self, iter: I, then: F) -> R
+    where
+        I: IntoIterator<Item = T>,
+        I::IntoIter: DoubleEndedIterator,
+        F: FnOnce(&List<T>) -> R,
+    {
+        self.extend(iter.into_iter().rev(), then)
+    }
+    /// Reverse the list, pass the reversed list to a continuation,
+    /// and return the result.
+    ///
+    /// This *does not* deallocate the orignal list, so be wary of
+    /// stack overflows when reversing larger lists.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use nolloc::List;
+    ///
+    /// let numbers = [1, 2, 3, 4, 5];
+    /// List::collect(numbers, |list| {
+    ///     // The collected list is reverse compared to the original iterator
+    ///     // We have to reverse the numbers iterator to make the assertion pass
+    ///     for (i, n) in list.iter().zip(numbers.iter().rev()) {
+    ///         assert_eq!(i, n);
+    ///     }
+    ///     
+    ///     // Reverse the list to make the order match
+    ///     list.reverse(|list| {
+    ///         for (i, n) in list.iter().copied().zip(&numbers) {
+    ///             assert_eq!(i, n);
+    ///         }
+    ///     });
+    /// })
+    /// ```
+    pub fn reverse<F, R>(&self, then: F) -> R
+    where
+        F: FnOnce(&List<&T>) -> R,
+    {
+        List::collect(self.iter(), then)
     }
 }
 
@@ -307,4 +403,14 @@ where
             (ListNode::Cons(x, xs), ListNode::Cons(y, ys)) => x.cmp(y).then_with(|| xs.cmp(ys)),
         }
     }
+}
+
+#[test]
+fn list_order() {
+    let numbers = [1, 2, 3, 4, 5];
+    List::collect(numbers, |list| {
+        for (i, n) in list.iter().zip(core::array::IntoIter::new(numbers).rev()) {
+            assert_eq!(i, &n);
+        }
+    });
 }
