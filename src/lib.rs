@@ -19,39 +19,36 @@ This crate currently provides 3 collections which keep their items entirely on t
 
 # Use Cases
 
-Let's say you have some iterator of numbers of unknown length, and you want to
-get the average of them.
+Let's say you have some iterator of numbers of unknown length, and you want sum
+the products of all pairs of numbers.
 
-One way to do this would be to iterate twice:
-```
-# let some_predicate = |&i: &i32| i % 2 == 0;
-let count = (0..100).filter(some_predicate).count();
-let sum: i32 = (0..100).filter(some_predicate).sum();
-let average = sum as f32 / count as f32;
-```
-This is inefficient because `some_predicate` may be complex, and we are running
-it twice as much as necessary!
-
-Another option is to collect the numbers into a `Vec`:
+One way to do this would be collect the numbers into a `Vec`:
 ```
 # let some_predicate = |&i: &i32| i % 2 == 0;
 let numbers: Vec<i32> = (0..100).filter(some_predicate).collect();
-let sum: i32 = numbers.iter().sum();
-let average = sum as f32 / numbers.len() as f32;
+let sum: i32 = numbers.iter().flat_map(|i| numbers.iter().map(move |j| i * j)).sum();
 ```
 But this performs an allocation, which is not always desired or even possible.
+
+Another option is reconstruct the iterator:
+```
+# let some_predicate = |&i: &i32| i % 2 == 0;
+let numbers = || (0..100).filter(some_predicate);
+let sum: i32 = numbers().flat_map(|i| numbers().map(move |j| i * j)).sum();
+```
+This is inefficient because `some_predicate` may be complex, and we are running
+it n^2 times!
 
 This crate provides [`List`], a resizable list type where all items exist on the stack.
 `List` works by using continuations to process pushed-to lists.
 
-Here is how you could use `List` to get the average:
+Here is how you could use `List` to get the sum:
 ```
 use nolloc::List;
 
 # let some_predicate = |&i: &i32| i % 2 == 0;
-let average = List::collect((0..100).filter(some_predicate), |list| {
-    let sum: i32 = list.iter().sum();
-    sum as f32 / list.len() as f32;
+let sum: i32 = List::collect((0..100).filter(some_predicate), |list| {
+    list.iter().flat_map(|i| list.iter().map(move |j| i * j)).sum()
 });
 ```
 With this solution, `some_predicate` is only called once per item, and
