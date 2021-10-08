@@ -1,7 +1,6 @@
 //! A growable key-value map where all items exist on the stack
 
-use core::borrow::Borrow;
-use std::fmt;
+use core::{borrow::Borrow, fmt, ptr};
 
 /// A growable key-value map where all items exist on the stack
 pub struct Map<'a, K, V> {
@@ -197,8 +196,8 @@ pub struct Iter<'a, 'm, K, V> {
 
 impl<'a, K, V> MapNode<'a, K, V> {
     fn contains_child(&self, child: &Self) -> bool {
-        self.left.map_or(false, |node| std::ptr::eq(node, child))
-            || self.right.map_or(false, |node| std::ptr::eq(node, child))
+        self.left.map_or(false, |node| ptr::eq(node, child))
+            || self.right.map_or(false, |node| ptr::eq(node, child))
             || self.left.map_or(false, |node| node.contains_child(child))
             || self.right.map_or(false, |node| node.contains_child(child))
     }

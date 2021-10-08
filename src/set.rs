@@ -1,7 +1,6 @@
 //! A growable set where all items exist on the stack
 
-use core::borrow::Borrow;
-use std::fmt;
+use core::{borrow::Borrow, fmt, ptr};
 
 /// A growable set where all items exist on the stack
 pub struct Set<'a, T> {
@@ -179,8 +178,8 @@ pub struct Iter<'a, 's, T> {
 
 impl<'a, T> SetNode<'a, T> {
     fn contains_child(&self, child: &Self) -> bool {
-        self.left.map_or(false, |node| std::ptr::eq(node, child))
-            || self.right.map_or(false, |node| std::ptr::eq(node, child))
+        self.left.map_or(false, |node| ptr::eq(node, child))
+            || self.right.map_or(false, |node| ptr::eq(node, child))
             || self.left.map_or(false, |node| node.contains_child(child))
             || self.right.map_or(false, |node| node.contains_child(child))
     }
