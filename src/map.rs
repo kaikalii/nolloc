@@ -33,6 +33,55 @@ where
     pub fn len(&self) -> usize {
         self.len
     }
+    /// Get the most recently inserted key-value pair in the map
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Map;
+    ///
+    /// Map::collect([1, 2, 3, 4].iter().map(|&i| (i, i)), |map| {
+    ///     assert_eq!(map.head(), Some((&4, &4)));
+    /// });
+    /// ```
+    pub fn head(&self) -> Option<(&K, &V)> {
+        let head = self.head?;
+        Some((&head.key, &head.value))
+    }
+    /// Get all entries inserterd after the most recent one
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Map;
+    ///
+    /// Map::collect([1, 2, 3, 4].iter().map(|&i| (i, i)), |map| {
+    ///     assert!(!map.rest().contains_key(&4));
+    /// });
+    /// ```
+    pub fn rest(&self) -> Self {
+        let head = if let Some(head) = self.head {
+            head
+        } else {
+            return Map::new();
+        };
+        match (head.left, head.right) {
+            (None, None) => Map::new(),
+            (None, Some(node)) | (Some(node), None) => Map {
+                head: Some(node),
+                len: self.len - 1,
+            },
+            (Some(left), Some(right)) => {
+                let node = if left.contains_child(right) {
+                    left
+                } else {
+                    right
+                };
+                Map {
+                    head: Some(node),
+                    len: self.len - 1,
+                }
+            }
+        }
+    }
 }
 
 impl<'a, K, V> Map<'a, K, V> {
@@ -79,7 +128,7 @@ impl<'a, K, V> Map<'a, K, V>
 where
     K: PartialOrd,
 {
-    /// Insert a key/value pair into the map if it does not already exist and
+    /// Insert a key-value pair into the map if it does not already exist and
     /// call a continuation on the new (or old) map
     ///
     /// This is an **O(logn)** operation.
@@ -93,7 +142,7 @@ where
             self.insert(key, value, then)
         }
     }
-    /// Insert a key/value pair into the map and call a continuation on the
+    /// Insert a key-value pair into the map and call a continuation on the
     /// new map
     ///
     /// If an entry with the key already exists in the map, it is not removed,
@@ -145,7 +194,7 @@ where
             len: self.len + 1,
         })
     }
-    /// Get an iterator over the key/value pairs of the list
+    /// Get an iterator over the key-value pairs of the list
     ///
     /// The iterator yields items in the opposite order of their insertion.
     pub fn iter<'m>(&'m self) -> Iter<'a, 'm, K, V> {
@@ -209,7 +258,7 @@ where
     }
 }
 
-/// An iterator over the key/value pairs of a [`Map`]
+/// An iterator over the key-value pairs of a [`Map`]
 pub struct Iter<'a, 'm, K, V> {
     node: Option<&'m MapNode<'a, K, V>>,
 }

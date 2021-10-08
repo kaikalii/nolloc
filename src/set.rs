@@ -32,6 +32,54 @@ where
     pub fn len(&self) -> usize {
         self.len
     }
+    /// Get the most recently inserted item in the set
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Set;
+    ///
+    /// Set::collect([1, 2, 3, 4], |set| {
+    ///     assert_eq!(set.head(), Some(&4));
+    /// });
+    /// ```
+    pub fn head(&self) -> Option<&T> {
+        Some(&self.head?.item)
+    }
+    /// Get all items inserterd after the most recent one
+    ///
+    /// # Example
+    /// ```
+    /// use nolloc::Set;
+    ///
+    /// Set::collect([1, 2, 3, 4], |set| {
+    ///     assert!(!set.rest().contains(&4));
+    /// });
+    /// ```
+    pub fn rest(&self) -> Self {
+        let head = if let Some(head) = self.head {
+            head
+        } else {
+            return Set::new();
+        };
+        match (head.left, head.right) {
+            (None, None) => Set::new(),
+            (None, Some(node)) | (Some(node), None) => Set {
+                head: Some(node),
+                len: self.len - 1,
+            },
+            (Some(left), Some(right)) => {
+                let node = if left.contains_child(right) {
+                    left
+                } else {
+                    right
+                };
+                Set {
+                    head: Some(node),
+                    len: self.len - 1,
+                }
+            }
+        }
+    }
 }
 
 impl<'a, T> Set<'a, T> {
