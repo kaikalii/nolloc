@@ -50,5 +50,6 @@ no allocation occurs!
 
 mod list;
 mod map;
+mod set;
 
-pub use {list::*, map::*};
+pub use {list::*, map::*, set::*};

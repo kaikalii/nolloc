@@ -70,7 +70,7 @@ where
     /// new map, and return its result
     ///
     /// If an entry with the key already exists in the map, it is not removed,
-    /// but the new entry is still inserted. All lookups on the new list
+    /// but the new entry is still inserted. All lookups on the new map
     /// will find the most recently inserted entry for a key.
     ///
     /// This is an **O(logn)** operation.
