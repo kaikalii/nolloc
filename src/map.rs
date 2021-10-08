@@ -435,6 +435,7 @@ where
     }
 }
 
+/// Map indexing is an **O(logn)** operation
 impl<'a, K, V, Q> Index<&Q> for Map<'a, K, V>
 where
     K: Borrow<Q>,

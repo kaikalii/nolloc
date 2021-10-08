@@ -7,6 +7,14 @@
 This crate provides utilities for doing things in rust without dynamic memory allocation.
 It uses `#![no_std]`, so you can be sure that no operation will allocate!
 
+# Collections
+
+This crate currently provides 3 collection which keep their items entirely on the stack:
+
+- [`List`] - a singly-linked list
+- [`Map`] - an append-only key-value map with O(logn) lookup and insertion
+- [`Set`] - an append-only set with O(logn) lookup and insertion
+
 # Use Cases
 
 Let's say you have some iterator of numbers of unknown length, and you want to
