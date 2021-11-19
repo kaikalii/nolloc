@@ -38,14 +38,14 @@ impl<'a, T> List<'a, T> {
     pub fn len(&self) -> usize {
         self.len
     }
-    /// Get the first item in the list
-    pub fn first(&self) -> Option<&'a T> {
+    /// Get the most recently inserted item in the list
+    pub fn head(&self) -> Option<&'a T> {
         match self.head {
             ListNode::Nil => None,
             ListNode::Cons(x, _) => Some(x),
         }
     }
-    /// Get all items after the first item in the list
+    /// Get all items inserterd after the most recent one
     pub fn rest(&self) -> List<'a, T> {
         match self.head {
             ListNode::Nil => List::default(),
@@ -55,10 +55,10 @@ impl<'a, T> List<'a, T> {
             },
         }
     }
-    /// Get the last item in the list
+    /// Get first item inserted into the list
     ///
     /// This is an **O(n)** operation.
-    pub fn last(&self) -> Option<&'a T> {
+    pub fn tail(&self) -> Option<&'a T> {
         match self.head {
             ListNode::Nil => None,
             ListNode::Cons(x, mut xs) => {
@@ -71,7 +71,7 @@ impl<'a, T> List<'a, T> {
             }
         }
     }
-    /// Push an item onto the front of the list and call a continuation function
+    /// Push an item onto the list and call a continuation function
     ///
     /// # Example
     /// ```
@@ -101,7 +101,7 @@ impl<'a, T> List<'a, T> {
         };
         then(&list)
     }
-    /// Attempt to pop and item off the front of the list
+    /// Attempt to pop the item most recently pushed to the list
     ///
     /// Returns a tuple of the list without the item and the item
     pub fn pop(&self) -> (Self, Option<&'a T>) {
@@ -116,7 +116,7 @@ impl<'a, T> List<'a, T> {
             ),
         }
     }
-    /// Attempt to pop an item off the front of the list
+    /// Attempt to pop the item most recently pushed to the list
     pub fn pop_mut(&mut self) -> Option<&'a T> {
         let (list, item) = self.pop();
         *self = list;
