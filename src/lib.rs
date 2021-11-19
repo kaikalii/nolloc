@@ -19,7 +19,7 @@ This crate currently provides 3 collections which keep their items entirely on t
 
 # Use Cases
 
-Let's say you have some iterator of numbers of unknown length, and you want sum
+Let's say you have some iterator of numbers of unknown length, and you want to sum
 the products of all pairs of numbers.
 
 One way to do this would be collect the numbers into a `Vec`:
